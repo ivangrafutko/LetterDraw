@@ -20,16 +20,13 @@
 
         #boxContainer {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); /* Adjust 20px to match dot size */
-            grid-gap: 2px;
             border: 1px solid black;
             padding: 5px;
             resize: both;
             overflow: auto;
-            min-width: 100px;
-            min-height: 100px;
             max-width: 100%;
-            max-height: calc(100vh - 60px);
+            max-height: calc(100vh - 160px); /* Set max height to the remaining screen height */
+            margin-bottom: 20px; /* Add a margin to prevent the lower scrollbar from occasionally appearing */
         }
 
         .dot {
@@ -37,10 +34,8 @@
             text-align: center;
             cursor: pointer;
             user-select: none;
-            width: 20px;
-            height: 20px;
             background-color: white;
-            line-height: 20px;
+            line-height: 1;
             position: relative;
         }
 
@@ -60,13 +55,46 @@
         #eraserButton.active, #copyButton.active, #brushButton.active {
             background-color: lightblue;
         }
+
+        #historyContainer {
+            white-space: pre;
+            font-family: monospace;
+            max-height: calc(100vh - 160px); /* Set max height to the remaining screen height */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+
+        #openHistoryButton {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: lightgray;
+            border: none;
+            cursor: pointer;
+        }
+
+        #historyTab {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2;
+        }
+
+        #historyContent {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
     <div id="controls">
         <button id="resetButton">Reset</button>
-        <label for="densityRange">Density:</label>
-        <input type="range" id="densityRange" min="10" max="40" value="20">
         <label for="charSelect">Draw Character:</label>
         <select id="charSelect">
             <option value=",">,</option>
@@ -78,41 +106,50 @@
         <button id="eraserButton">Eraser</button>
         <button id="brushButton">Brush</button>
         <button id="copyButton">Copy Grid Text</button>
+        <button id="openHistoryButton">Open History</button>
     </div>
     <div id="boxContainer"></div>
+    <div id="historyTab">
+        <div id="historyContent">
+            <h2>History</h2>
+            <div id="historyContainer"></div>
+            <button id="closeHistoryButton">Close History</button>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('boxContainer');
+            const historyTab = document.getElementById('historyTab');
+            const historyContainer = document.getElementById('historyContainer');
             const resetButton = document.getElementById('resetButton');
-            const densityRange = document.getElementById('densityRange');
             const charSelect = document.getElementById('charSelect');
             const eraserButton = document.getElementById('eraserButton');
             const brushButton = document.getElementById('brushButton');
             const copyButton = document.getElementById('copyButton');
+            const openHistoryButton = document.getElementById('openHistoryButton');
+            const closeHistoryButton = document.getElementById('closeHistoryButton');
             let isMouseDown = false;
             let isEraserMode = false;
             let isBrushMode = false;
-            let elementSize = parseInt(densityRange.value);
             let drawChar = charSelect.value;
+            const drawingHistory = []; // Array to store recent drawings
 
             function calculateGridSize() {
                 const containerWidth = container.clientWidth;
                 const containerHeight = container.clientHeight;
-                const horizontalSize = Math.floor(containerWidth / elementSize);
-                const verticalSize = Math.floor((containerHeight / elementSize) / 1.3);
+                const horizontalSize = Math.floor(containerWidth / 20); // Fixed size of 20px per dot
+                const verticalSize = Math.floor(containerHeight / 20); // Fixed size of 20px per dot
                 return { horizontalSize, verticalSize };
             }
 
             function createGrid() {
                 const { horizontalSize, verticalSize } = calculateGridSize();
-                container.style.gridTemplateColumns = `repeat(${horizontalSize}, ${elementSize}px)`;
+                container.style.gridTemplateColumns = `repeat(${horizontalSize}, 20px)`;
                 container.innerHTML = '';
 
                 for (let i = 0; i < horizontalSize * verticalSize; i++) {
                     const dotElement = document.createElement('span');
                     dotElement.classList.add('dot');
-                    dotElement.style.width = `${elementSize}px`;
-                    dotElement.style.height = `${elementSize}px`;
                     dotElement.setAttribute('data-draw-char', drawChar);
                     container.appendChild(dotElement);
                 }
@@ -161,11 +198,6 @@
                 document.querySelectorAll('.dot').forEach(dot => dot.classList.remove('hovered'));
             };
 
-            densityRange.oninput = () => {
-                elementSize = parseInt(densityRange.value);
-                createGrid();
-            };
-
             charSelect.onchange = () => {
                 drawChar = charSelect.value;
                 document.querySelectorAll('.dot').forEach(dot => dot.setAttribute('data-draw-char', drawChar));
@@ -194,12 +226,31 @@
                     }
                 });
 
+                drawingHistory.push(gridText); // Add the current drawing to the history
+
+                // Display drawing history below the grid
+                historyContainer.innerHTML = '';
+                drawingHistory.forEach((drawing, index) => {
+                    const historyElement = document.createElement('div');
+                    historyElement.textContent = `Drawing ${index + 1}:\n${drawing}`;
+                    historyContainer.appendChild(historyElement);
+                });
+
                 navigator.clipboard.writeText(gridText).then(() => {
                     alert('Grid text copied to clipboard!');
                 }).catch(err => {
                     console.error('Error copying text: ', err);
                 });
             };
+
+            openHistoryButton.onclick = () => {
+                historyTab.style.display = 'block';
+            };
+
+            closeHistoryButton.onclick = () => {
+                historyTab.style.display = 'none';
+            };
+
             const resizeObserver = new ResizeObserver(createGrid);
             resizeObserver.observe(container);
 
