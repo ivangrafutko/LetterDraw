@@ -314,12 +314,14 @@
                 container.addEventListener('touchmove', (event) => {
                     event.preventDefault();
                     const target = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
-                    if (target) {
+                    if (target && target.classList.contains('dot')) {
                         if (isEraserMode) {
                             if (isBrushMode) {
                                 target.classList.remove('hovered');
                             }
                         } else if (isBrushMode) {
+                            target.classList.add('hovered');
+                        } else {
                             target.classList.add('hovered');
                         }
                     }
