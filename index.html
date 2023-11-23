@@ -97,6 +97,8 @@
 <body>
     <div id="controls">
         <button id="resetButton">Reset</button>
+        <label for="densityRange">Density:</label>
+        <input type="range" id="densityRange" min="10" max="40" value="20">
         <label for="charSelect">Draw Character:</label>
         <select id="charSelect">
             <option value=",">,</option>
@@ -124,6 +126,7 @@
             const historyTab = document.getElementById('historyTab');
             const historyContainer = document.getElementById('historyContainer');
             const resetButton = document.getElementById('resetButton');
+            const densityRange = document.getElementById('densityRange');
             const charSelect = document.getElementById('charSelect');
             const eraserButton = document.getElementById('eraserButton');
             const brushButton = document.getElementById('brushButton');
@@ -133,20 +136,21 @@
             let isMouseDown = false;
             let isEraserMode = false;
             let isBrushMode = false;
+            let elementSize = parseInt(densityRange.value);
             let drawChar = charSelect.value;
             const drawingHistory = []; // Array to store recent drawings
 
             function calculateGridSize() {
                 const containerWidth = container.clientWidth;
                 const containerHeight = container.clientHeight;
-                const horizontalSize = Math.floor(containerWidth / 20); // Fixed size of 20px per dot
-                const verticalSize = Math.floor(containerHeight / 20); // Fixed size of 20px per dot
+                const horizontalSize = Math.floor(containerWidth / elementSize);
+                const verticalSize = Math.floor(containerHeight / elementSize);
                 return { horizontalSize, verticalSize };
             }
 
             function createGrid() {
                 const { horizontalSize, verticalSize } = calculateGridSize();
-                container.style.gridTemplateColumns = `repeat(${horizontalSize}, 20px)`;
+                container.style.gridTemplateColumns = `repeat(${horizontalSize}, ${elementSize}px)`;
                 container.innerHTML = '';
 
                 for (let i = 0; i < horizontalSize * verticalSize; i++) {
@@ -198,6 +202,11 @@
 
             resetButton.onclick = () => {
                 document.querySelectorAll('.dot').forEach(dot => dot.classList.remove('hovered'));
+            };
+
+            densityRange.oninput = () => {
+                elementSize = parseInt(densityRange.value);
+                createGrid();
             };
 
             charSelect.onchange = () => {
