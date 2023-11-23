@@ -228,9 +228,21 @@
             container.onmousemove = handleDrawingEvent;
             container.addEventListener('touchmove', (event) => {
                 event.preventDefault();
-                const target = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
-                if (target) {
-                    handleDrawingEvent(target);
+                const touches = event.touches;
+
+                for (let i = 0; i < touches.length; i++) {
+                    const touch = touches[i];
+                    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+
+                    if (target && target.classList.contains('dot')) {
+                        if (isEraserMode) {
+                            if (isBrushMode) {
+                                target.classList.remove('hovered');
+                            }
+                        } else if (isBrushMode) {
+                            target.classList.add('hovered');
+                        }
+                    }
                 }
             });
 
