@@ -79,6 +79,7 @@
             color: white; /* Dark mode text color */
         }
 
+
         #eraserButton.active, #copyButton.active, #brushButton.active {
             background-color: lightblue;
         }
@@ -119,7 +120,7 @@
     </style>
 </head>
 <body>
-    <div id="controls">
+<div id="controls">
         <button id="resetButton">Reset</button>
         <label for="densityRange">Density:</label>
         <input type="range" id="densityRange" min="10" max="40" value="20">
@@ -188,8 +189,8 @@
                 }
             }
 
-            container.onmouseover = (event) => {
-                if (event.target.classList.contains('dot') && isMouseDown) {
+            function handleDrawingEvent(event) {
+                if ((event.type === 'mousemove' || event.type === 'touchmove') && event.target.classList.contains('dot') && isMouseDown) {
                     const dots = document.querySelectorAll('.dot');
                     const index = Array.from(dots).indexOf(event.target);
                     const horizontalSize = calculateGridSize().horizontalSize;
@@ -222,7 +223,16 @@
                         event.target.classList.add('hovered');
                     }
                 }
-            };
+            }
+
+            container.onmousemove = handleDrawingEvent;
+            container.addEventListener('touchmove', (event) => {
+                event.preventDefault();
+                const target = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
+                if (target) {
+                    handleDrawingEvent(target);
+                }
+            });
 
             document.body.onmousedown = () => isMouseDown = true;
             document.body.onmouseup = () => isMouseDown = false;
@@ -315,15 +325,7 @@
                     event.preventDefault();
                     const target = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
                     if (target && target.classList.contains('dot')) {
-                        if (isEraserMode) {
-                            if (isBrushMode) {
-                                target.classList.remove('hovered');
-                            }
-                        } else if (isBrushMode) {
-                            target.classList.add('hovered');
-                        } else {
-                            target.classList.add('hovered');
-                        }
+                        target.classList.add('hovered');
                     }
                 });
             }
