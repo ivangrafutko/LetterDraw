@@ -237,7 +237,20 @@
                     if (target && target.classList.contains('dot')) {
                         if (isEraserMode) {
                             if (isBrushMode) {
-                                target.classList.remove('hovered');
+                                const dots = document.querySelectorAll('.dot');
+                                const index = Array.from(dots).indexOf(target);
+                                const horizontalSize = calculateGridSize().horizontalSize;
+                                const indices = [
+                                    index - 1,
+                                    index + 1,
+                                    index - horizontalSize,
+                                    index + horizontalSize,
+                                ];
+                                indices.forEach((i) => {
+                                    if (i >= 0 && i < dots.length) {
+                                        dots[i].classList.remove('hovered');
+                                    }
+                                });
                             }
                         } else if (isBrushMode) {
                             target.classList.add('hovered');
