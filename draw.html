@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Grid with Eraser, Brush, and Copy Function</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #controls {
+            margin: 10px;
+        }
+
+        #boxContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(20px, 1fr)); /* Adjust 20px to match dot size */
+            grid-gap: 2px;
+            border: 1px solid black;
+            padding: 5px;
+            resize: both;
+            overflow: auto;
+            min-width: 100px;
+            min-height: 100px;
+            max-width: 100%;
+            max-height: calc(100vh - 60px);
+        }
+
+        .dot {
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            line-height: 20px;
+            position: relative;
+        }
+
+        .dot::after {
+            content: ' '; /* Default character is a space */
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+        }
+
+        .dot.hovered::after {
+            content: attr(data-draw-char);
+        }
+
+        #eraserButton.active, #copyButton.active, #brushButton.active {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <button id="resetButton">Reset</button>
+        <label for="densityRange">Density:</label>
+        <input type="range" id="densityRange" min="10" max="40" value="20">
+        <label for="charSelect">Draw Character:</label>
+        <select id="charSelect">
+            <option value=",">,</option>
+            <option value="!">!</option>
+            <option value=":">:</option>
+            <option value=";">;</option>
+            <option value="|">|</option>
+        </select>
+        <button id="eraserButton">Eraser</button>
+        <button id="brushButton">Brush</button>
+        <button id="copyButton">Copy Grid Text</button>
+    </div>
+    <div id="boxContainer"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('boxContainer');
+            const resetButton = document.getElementById('resetButton');
+            const densityRange = document.getElementById('densityRange');
+            const charSelect = document.getElementById('charSelect');
+            const eraserButton = document.getElementById('eraserButton');
+            const brushButton = document.getElementById('brushButton');
+            const copyButton = document.getElementById('copyButton');
+            let isMouseDown = false;
+            let isEraserMode = false;
+            let isBrushMode = false;
+            let elementSize = parseInt(densityRange.value);
+            let drawChar = charSelect.value;
+
+            function calculateGridSize() {
+                const containerWidth = container.clientWidth;
+                const containerHeight = container.clientHeight;
+                const horizontalSize = Math.floor(containerWidth / elementSize);
+                const verticalSize = Math.floor((containerHeight / elementSize) / 1.3);
+                return { horizontalSize, verticalSize };
+            }
+
+            function createGrid() {
+                const { horizontalSize, verticalSize } = calculateGridSize();
+                container.style.gridTemplateColumns = `repeat(${horizontalSize}, ${elementSize}px)`;
+                container.innerHTML = '';
+
+                for (let i = 0; i < horizontalSize * verticalSize; i++) {
+                    const dotElement = document.createElement('span');
+                    dotElement.classList.add('dot');
+                    dotElement.style.width = `${elementSize}px`;
+                    dotElement.style.height = `${elementSize}px`;
+                    dotElement.setAttribute('data-draw-char', drawChar);
+                    container.appendChild(dotElement);
+                }
+            }
+
+            container.onmouseover = (event) => {
+                if (event.target.classList.contains('dot') && isMouseDown) {
+                    const dots = document.querySelectorAll('.dot');
+                    const index = Array.from(dots).indexOf(event.target);
+                    const horizontalSize = calculateGridSize().horizontalSize;
+                    const indices = [
+                        index - 1,
+                        index + 1,
+                        index - horizontalSize,
+                        index + horizontalSize,
+                    ];
+
+                    if (isEraserMode) {
+                        event.target.classList.remove('hovered');
+
+                        if (isBrushMode) {
+                            indices.forEach((i) => {
+                                if (i >= 0 && i < dots.length) {
+                                    dots[i].classList.remove('hovered');
+                                }
+                            });
+                        } else {
+                            return;
+                        }
+                    } else if (isBrushMode) {
+                        indices.forEach((i) => {
+                            if (i >= 0 && i < dots.length) {
+                                dots[i].classList.add('hovered');
+                            }
+                        });
+                    } else {
+                        event.target.classList.add('hovered');
+                    }
+                }
+            };
+
+            document.body.onmousedown = () => isMouseDown = true;
+            document.body.onmouseup = () => isMouseDown = false;
+
+            resetButton.onclick = () => {
+                document.querySelectorAll('.dot').forEach(dot => dot.classList.remove('hovered'));
+            };
+
+            densityRange.oninput = () => {
+                elementSize = parseInt(densityRange.value);
+                createGrid();
+            };
+
+            charSelect.onchange = () => {
+                drawChar = charSelect.value;
+                document.querySelectorAll('.dot').forEach(dot => dot.setAttribute('data-draw-char', drawChar));
+            };
+
+            eraserButton.onclick = () => {
+                isEraserMode = !isEraserMode;
+                eraserButton.classList.toggle('active', isEraserMode);
+            };
+
+            brushButton.onclick = () => {
+                isBrushMode = !isBrushMode;
+                brushButton.classList.toggle('active', isBrushMode);
+            };
+
+            copyButton.onclick = () => {
+                let gridText = '';
+                const rows = container.querySelectorAll('.dot');
+                const { horizontalSize } = calculateGridSize();
+
+                rows.forEach((dot, index) => {
+                    const char = dot.classList.contains('hovered') ? drawChar : ' '; // Use space character for empty cells
+                    gridText += char + char; // Duplicate the character sideways
+                    if (index % horizontalSize === horizontalSize - 1) {
+                        gridText += '\n'; // Start a new line after each row
+                    }
+                });
+
+                navigator.clipboard.writeText(gridText).then(() => {
+                    alert('Grid text copied to clipboard!');
+                }).catch(err => {
+                    console.error('Error copying text: ', err);
+                });
+            };
+            const resizeObserver = new ResizeObserver(createGrid);
+            resizeObserver.observe(container);
+
+            createGrid();
+        });
+    </script>
+</body>
+</html>
