@@ -60,12 +60,6 @@
         #eraserButton.active, #copyButton.active, #brushButton.active {
             background-color: lightblue;
         }
-
-        #historyContainer {
-            margin-top: 20px;
-            white-space: pre;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
@@ -86,11 +80,9 @@
         <button id="copyButton">Copy Grid Text</button>
     </div>
     <div id="boxContainer"></div>
-    <div id="historyContainer"></div> <!-- New container for drawing history -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('boxContainer');
-            const historyContainer = document.getElementById('historyContainer'); // New container
             const resetButton = document.getElementById('resetButton');
             const densityRange = document.getElementById('densityRange');
             const charSelect = document.getElementById('charSelect');
@@ -102,7 +94,6 @@
             let isBrushMode = false;
             let elementSize = parseInt(densityRange.value);
             let drawChar = charSelect.value;
-            const drawingHistory = []; // Array to store recent drawings
 
             function calculateGridSize() {
                 const containerWidth = container.clientWidth;
@@ -203,23 +194,12 @@
                     }
                 });
 
-                drawingHistory.push(gridText); // Add the current drawing to the history
-
-                // Display drawing history below the grid
-                historyContainer.innerHTML = '';
-                drawingHistory.forEach((drawing, index) => {
-                    const historyElement = document.createElement('div');
-                    historyElement.textContent = `Drawing ${index + 1}:\n${drawing}`;
-                    historyContainer.appendChild(historyElement);
-                });
-
                 navigator.clipboard.writeText(gridText).then(() => {
                     alert('Grid text copied to clipboard!');
                 }).catch(err => {
                     console.error('Error copying text: ', err);
                 });
             };
-
             const resizeObserver = new ResizeObserver(createGrid);
             resizeObserver.observe(container);
 
