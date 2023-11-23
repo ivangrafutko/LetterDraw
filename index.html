@@ -24,6 +24,8 @@
             padding: 5px;
             resize: both;
             overflow: auto;
+            width: 95%;
+            height: 90%;
             max-width: 100%;
             max-height: calc(100vh - 160px); /* Set max height to the remaining screen height */
             margin-bottom: 20px; /* Add a margin to prevent the lower scrollbar from occasionally appearing */
@@ -255,6 +257,22 @@
             resizeObserver.observe(container);
 
             createGrid();
+
+            // Detect if the user is on a mobile device
+            function isMobileDevice() {
+                return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+            }
+
+            // Check if it's a mobile device and add touch events
+            if (isMobileDevice()) {
+                container.addEventListener('touchmove', (event) => {
+                    event.preventDefault();
+                    const target = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
+                    if (target && target.classList.contains('dot')) {
+                        target.classList.add('hovered');
+                    }
+                });
+            }
         });
     </script>
 </body>
