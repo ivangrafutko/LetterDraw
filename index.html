@@ -12,6 +12,14 @@
             flex-direction: column;
             align-items: center;
             height: 100vh;
+            background-color: white; /* Light mode background color */
+            color: black; /* Light mode text color */
+        }
+
+        /* Add dark mode styles here */
+        body.dark-mode {
+            background-color: black;
+            color: white;
         }
 
         #controls {
@@ -31,12 +39,18 @@
             margin-bottom: 20px; /* Add a margin to prevent the lower scrollbar from occasionally appearing */
         }
 
+        /* Dark mode styles for the border */
+        body.dark-mode #boxContainer {
+            border-color: white;
+        }
+
+        /* Default styles for .dot elements (Light mode) */
         .dot {
             display: inline-block;
             text-align: center;
             cursor: pointer;
             user-select: none;
-            background-color: white;
+            background-color: white; /* Light mode background color */
             line-height: 1;
             position: relative;
         }
@@ -50,9 +64,21 @@
             top: 0;
         }
 
+        /* Light mode text color for characters */
         .dot.hovered::after {
             content: attr(data-draw-char);
+            color: black; /* Light mode text color */
         }
+
+        /* Dark mode styles for .dot elements */
+        .dark-mode .dot {
+            background-color: black;
+        }
+
+        .dark-mode .dot::after {
+            color: white; /* Dark mode text color */
+        }
+
 
         #eraserButton.active, #copyButton.active, #brushButton.active {
             background-color: lightblue;
@@ -63,14 +89,6 @@
             font-family: monospace;
             max-height: calc(100vh - 160px); /* Set max height to the remaining screen height */
             overflow-y: auto; /* Enable vertical scrolling */
-        }
-
-        #openHistoryButton {
-            margin-top: 10px;
-            padding: 5px 10px;
-            background-color: lightgray;
-            border: none;
-            cursor: pointer;
         }
 
         #historyTab {
@@ -84,6 +102,7 @@
             z-index: 2;
         }
 
+        /* Light mode styles for the history content */
         #historyContent {
             position: absolute;
             left: 50%;
@@ -92,10 +111,16 @@
             background-color: white;
             padding: 20px;
         }
+
+        /* Dark mode styles for the history content */
+        body.dark-mode #historyContent {
+            background-color: black;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <div id="controls">
+<div id="controls">
         <button id="resetButton">Reset</button>
         <label for="densityRange">Density:</label>
         <input type="range" id="densityRange" min="10" max="40" value="20">
@@ -109,8 +134,9 @@
         </select>
         <button id="eraserButton">Eraser</button>
         <button id="brushButton">Brush</button>
-        <button id="copyButton">Copy Grid Text</button>
-        <button id="openHistoryButton">Open History</button>
+        <button id="copyButton">Copy</button>
+        <button id="darkModeButton">Dark</button> <!-- Renamed and added an ID -->
+        <button id="openHistoryButton">History</button> <!-- Renamed and added an ID -->
     </div>
     <div id="boxContainer"></div>
     <div id="historyTab">
@@ -133,12 +159,14 @@
             const copyButton = document.getElementById('copyButton');
             const openHistoryButton = document.getElementById('openHistoryButton');
             const closeHistoryButton = document.getElementById('closeHistoryButton');
+            const toggleDarkModeButton = document.getElementById('darkModeButton'); // Updated the ID here
             let isMouseDown = false;
             let isEraserMode = false;
             let isBrushMode = false;
             let elementSize = parseInt(densityRange.value);
             let drawChar = charSelect.value;
             const drawingHistory = []; // Array to store recent drawings
+            let isDarkMode = false;
 
             function calculateGridSize() {
                 const containerWidth = container.clientWidth;
@@ -260,6 +288,16 @@
 
             closeHistoryButton.onclick = () => {
                 historyTab.style.display = 'none';
+            };
+
+            toggleDarkModeButton.onclick = () => {
+                isDarkMode = !isDarkMode;
+                document.body.classList.toggle('dark-mode', isDarkMode);
+                // You can add more elements here to toggle dark mode for other parts of the page
+                const dots = document.querySelectorAll('.dot');
+                dots.forEach(dot => dot.classList.toggle('dark-mode', isDarkMode));
+                // Toggle border color for the container
+                container.style.borderColor = isDarkMode ? 'white' : 'black';
             };
 
             const resizeObserver = new ResizeObserver(createGrid);
