@@ -79,7 +79,6 @@
             color: white; /* Dark mode text color */
         }
 
-
         #eraserButton.active, #copyButton.active, #brushButton.active {
             background-color: lightblue;
         }
@@ -120,7 +119,7 @@
     </style>
 </head>
 <body>
-<div id="controls">
+    <div id="controls">
         <button id="resetButton">Reset</button>
         <label for="densityRange">Density:</label>
         <input type="range" id="densityRange" min="10" max="40" value="20">
@@ -315,8 +314,14 @@
                 container.addEventListener('touchmove', (event) => {
                     event.preventDefault();
                     const target = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
-                    if (target && target.classList.contains('dot')) {
-                        target.classList.add('hovered');
+                    if (target) {
+                        if (isEraserMode) {
+                            if (isBrushMode) {
+                                target.classList.remove('hovered');
+                            }
+                        } else if (isBrushMode) {
+                            target.classList.add('hovered');
+                        }
                     }
                 });
             }
