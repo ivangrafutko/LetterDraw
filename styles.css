@@ -1,0 +1,112 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    background-color: white; /* Light mode background color */
+    color: black; /* Light mode text color */
+}
+
+/* Add dark mode styles here */
+body.dark-mode {
+    background-color: black;
+    color: white;
+}
+
+#controls {
+    margin: 10px;
+}
+
+#boxContainer {
+    display: grid;
+    border: 1px solid black;
+    padding: 5px;
+    resize: both;
+    overflow: auto;
+    width: 95%;
+    height: 90%;
+    max-width: 100%;
+    max-height: calc(100vh - 160px); /* Set max height to the remaining screen height */
+    margin-bottom: 20px; /* Add a margin to prevent the lower scrollbar from occasionally appearing */
+}
+
+/* Dark mode styles for the border */
+body.dark-mode #boxContainer {
+    border-color: white;
+}
+
+/* Default styles for .dot elements (Light mode) */
+.dot {
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    background-color: white; /* Light mode background color */
+    line-height: 1;
+    position: relative;
+}
+
+.dot::after {
+    content: ' '; /* Default character is a space */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+}
+
+/* Light mode text color for characters */
+.dot.hovered::after {
+    content: attr(data-draw-char);
+    color: black; /* Light mode text color */
+}
+
+/* Dark mode styles for .dot elements */
+.dark-mode .dot {
+    background-color: black;
+}
+
+.dark-mode .dot::after {
+    color: white; /* Dark mode text color */
+}
+
+
+#eraserButton.active, #copyButton.active, #brushButton.active {
+    background-color: lightblue;
+}
+
+#historyContainer {
+    white-space: pre;
+    font-family: monospace;
+    max-height: calc(100vh - 160px); /* Set max height to the remaining screen height */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+#historyTab {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+}
+
+/* Light mode styles for the history content */
+#historyContent {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+}
+
+/* Dark mode styles for the history content */
+body.dark-mode #historyContent {
+    background-color: black;
+    color: white;
+}
