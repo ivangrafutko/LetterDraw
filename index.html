@@ -114,6 +114,15 @@
             }
 
             container.onmousemove = handleDrawingEvent;
+            container.addEventListener('touchstart', (event) => {
+                event.preventDefault();
+                const touch = event.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+
+                if (target && target.classList.contains('dot')) {
+                    handleDotInteraction(target);
+                }   
+            });
             container.addEventListener('touchmove', (event) => {
                 event.preventDefault();
                 const touches = event.touches;
